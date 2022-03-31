@@ -1,8 +1,0 @@
-[default]
-Import = "../out/thePathToYourTickets.json"
-
-[zendesk]
-Domain = "targetZendeskDomain"
-Credentials = "YOURZENDESKEMAIL@yourbiz.com/token:YOURZENDESKAPIKEY"
-TestAssignee = "99999999993"
-TestRequester = "593370587694"
