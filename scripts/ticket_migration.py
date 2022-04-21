@@ -1,34 +1,87 @@
+from base64 import b64encode
+from operator import itemgetter
+import ast
 import sys
 import json
+import requests
+import configparser
+
 
 def main(args):
     ''' main function '''
-d = json.JSONDecoder()
-jsonFile = open('/pathto.json', 'r').read() #Get concatenated json in jsonFile
-jList = []
-while True:
-   try:
-      j,n = d.raw_decode(jsonFile) #decodes and separates different json files on from other
-      jList.append(j) #Appends each line
-   except ValueError: 
-      break
-   jsonFile=jsonFile[n:] #Drop into a string
-   result_as_json = dict( items=jList )#From dict to a list baby.
+# d = json.JSONDecoder()
 
-    #print (data[0]['metric_set']['ticket_id']) #Show first tickets' 'ticket_id'
-    #print(type(data[0]['submitter']['name'])) #Show the type of second dict
-    #print(data[0]['submitter']['name']) #Tells us the name of submitter
-    #print(data[0]['submitter']['email']) #Tells us email address of submitter
+file = open('/Users/dgalca/Documents/GitHub/Ticket-Migration/src/testest.json', "r")
+data = file.read().replace("}{","},{")
+data = "["+data+"]"
+test = ast.literal_eval(data)
+# test=ast.literal_eval(str(map(str,data.split(','))))
+print(test, type(test))
+exit()
+
+# jsonFile = open('/Users/dgalca/Documents/GitHub/Ticket-Migration/src/testest.json', 'r').read() #Get concatenated json in jsonFile
+jList = []
+n = 0
+while len(jsonFile) > n:
+   try:
+      print(len(jsonFile), n)
+      j,k = d.raw_decode(jsonFile) #decodes and separates different json files one from other
+      n += k
+      jList.append(j) #Appends each line
+    #   print(j)
+    #   print(type(j))
+    #   print(n)
+    #   print(type(n))
+   except Exception as err:      
+      print('Error:', err)
+   jsonFile=jsonFile[k:] #Drop into a string
+# result_as_json = dict( items=jList )#From dict to a list baby.
+
+print(len(jList))
+ticket_data = {"tickets" : []}
+
 for item in range(len(jList)):
-    print(type(jsonFile))#[item]['submitter'], ' - This is submitter data')
-    ##print(jList[item]['tags'], '- These are the tags' )
-    #print(jList[item]['comments'])
-    #print(jList[item]['metric_set']['ticket_id'], ' - This is the ticket ID')
-    #print(jList[item]['submitter']['id'], ' - This is the submitter ID')
-    #print(jList[item]['submitter']['name'], ' - This is the submitter name')
-    #print(jList[item]['submitter']['email'], ' - This is the submitter email address')
-    #print(jList[item]['assignee'], ' - This is the Assignee data')
-    # TODO: Take the info pulled from above and make a request to create new tickets with it. (Using Zen API; Create Many maybe;)
+
+    testestest = {'tags' : jList[item]['tags']}
+    ticket_data['tickets'].append(testestest)
+
+    # commentlist = []
+
+    # for comment in jList[item]['comments']:
+    #     commentlist.append({'created_at' : comment['created_at'], ###### TO CHECK IF THIS SORTS COMMENTS IN ZENDESK
+    #                         'id' : comment['id'],
+    #                         'author_id' : comment['author_id'], 
+    #                         'body' :comment['body']})
+    #     # commentlist = sorted(commentlist, key=itemgetter(0))
+    
+    # single_ticket_data = {'tags' : jList[item]['tags'], 
+    #                'subject' : jList[item]['subject'],
+    #                'submitter' : {'id' : jList[item]['submitter']['id'], 
+    #                               'name' : jList[item]['submitter']['name'], 
+    #                               'email' : jList[item]['submitter']['email']},
+    #                'comments' : commentlist}
+    
+    # ticket_data['tickets'].append(single_ticket_data)
+    
+with open('/Users/dgalca/Documents/GitHub/Ticket-Migration/src/test.json', 'w') as outfile:
+        json.dump(ticket_data, outfile) #### TO TEST IF THE CODE WRITES TO JSON, DELETE L8R
+
+# def create_tickets(dom, auth):
+#   print(b64encode(auth.encode('utf-8'))[2:-1])
+#   header = {"Authorization": "Basic {}".format(str(b64encode(auth.encode('utf-8')))[2:-1])}
+#   url = f"https://{dom}.zendesk.com/api/v2/tickets/create_many"
+
+#   try:
+#     result = requests.post(url, data=json.dumps(ticket_data), headers=header)
+#     return result
+#   except Exception as err: 
+#     print('Error making zendesk POST request:', str(err))
+#     exit()
+
+    
+        
+        # TODO: Take the info pulled from above and make a request to create new tickets with it. (Using Zen API; Create Many maybe;)
+
 
 
 #if __name__ == "__main__":
