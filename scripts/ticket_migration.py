@@ -1,82 +1,65 @@
 from base64 import b64encode
 from operator import itemgetter
-import ast
-import sys
+import ast #IS THIS NEEDED?
+import sys #AND THIS?
 import json
+from telnetlib import AUTHENTICATION ##AAAA WHAT'S THIS AND WHY DID IT SUDDENLY APPEAR HERE
 import requests
 import configparser
 
+config = configparser.RawConfigParser()
+config.read('./src/auth.ini')
+EXPORT_FILE = config['default']['Import'].strip('"')
+DOMAIN = config['zendesk']['Domain'].strip('"')
+AUTH = config['zendesk']['Credentials'].strip('"')
 
 def main(args):
     ''' main function '''
 # d = json.JSONDecoder()
 
-file = open('/Users/dgalca/Documents/GitHub/Ticket-Migration/src/testest.json', "r")
-data = file.read().replace("}{","},{")
-data = "["+data+"]"
-test = ast.literal_eval(data)
-# test=ast.literal_eval(str(map(str,data.split(','))))
-print(test, type(test))
-exit()
+with open(EXPORT_FILE, 'r') as jsonFile:
+    jList = [json.loads(line)
+            for line in jsonFile.readlines()]
 
-# jsonFile = open('/Users/dgalca/Documents/GitHub/Ticket-Migration/src/testest.json', 'r').read() #Get concatenated json in jsonFile
-jList = []
-n = 0
-while len(jsonFile) > n:
-   try:
-      print(len(jsonFile), n)
-      j,k = d.raw_decode(jsonFile) #decodes and separates different json files one from other
-      n += k
-      jList.append(j) #Appends each line
-    #   print(j)
-    #   print(type(j))
-    #   print(n)
-    #   print(type(n))
-   except Exception as err:      
-      print('Error:', err)
-   jsonFile=jsonFile[k:] #Drop into a string
-# result_as_json = dict( items=jList )#From dict to a list baby.
+print("The number of items in this JSON is:" + str(len(jList)))
 
-print(len(jList))
 ticket_data = {"tickets" : []}
 
 for item in range(len(jList)):
 
-    testestest = {'tags' : jList[item]['tags']}
-    ticket_data['tickets'].append(testestest)
+    commentlist = []
 
-    # commentlist = []
-
-    # for comment in jList[item]['comments']:
-    #     commentlist.append({'created_at' : comment['created_at'], ###### TO CHECK IF THIS SORTS COMMENTS IN ZENDESK
-    #                         'id' : comment['id'],
-    #                         'author_id' : comment['author_id'], 
-    #                         'body' :comment['body']})
-    #     # commentlist = sorted(commentlist, key=itemgetter(0))
+    for comment in jList[item]['comments']:
+        
+        commentlist.append({'created_at' : comment['created_at'], ###### TO CHECK IF THIS SORTS COMMENTS IN ZENDESK
+                            'id' : comment['id'],
+                            'author_id' : comment['author_id'], 
+                            'body' :comment['body']})
     
-    # single_ticket_data = {'tags' : jList[item]['tags'], 
-    #                'subject' : jList[item]['subject'],
-    #                'submitter' : {'id' : jList[item]['submitter']['id'], 
-    #                               'name' : jList[item]['submitter']['name'], 
-    #                               'email' : jList[item]['submitter']['email']},
-    #                'comments' : commentlist}
+    single_ticket_data = {'tags' : jList[item]['tags'], 
+                          'subject' : jList[item]['subject'],
+                          'submitter' : {'id' : jList[item]['submitter']['id'], 
+                                         'name' : jList[item]['submitter']['name'], 
+                                         'email' : jList[item]['submitter']['email']},
+                          'comments' : commentlist}
     
-    # ticket_data['tickets'].append(single_ticket_data)
+    ticket_data['tickets'].append(single_ticket_data)
     
-with open('/Users/dgalca/Documents/GitHub/Ticket-Migration/src/test.json', 'w') as outfile:
-        json.dump(ticket_data, outfile) #### TO TEST IF THE CODE WRITES TO JSON, DELETE L8R
+# with open('/Users/dgalca/Documents/GitHub/Ticket-Migration/src/test.json', 'w') as outfile:
+#         json.dump(ticket_data, outfile) #### TO TEST IF THE CODE WRITES TO JSON, DELETE L8R
 
-# def create_tickets(dom, auth):
-#   print(b64encode(auth.encode('utf-8'))[2:-1])
-#   header = {"Authorization": "Basic {}".format(str(b64encode(auth.encode('utf-8')))[2:-1])}
-#   url = f"https://{dom}.zendesk.com/api/v2/tickets/create_many"
+def create_tickets():
+  print(b64encode(AUTH.encode('utf-8'))[2:-1])
+  header = {"Authorization": "Basic {}".format(str(b64encode(AUTH.encode('utf-8')))[2:-1])}
+  url = f"https://{DOMAIN}.zendesk.com/api/v2/tickets/create_many"
 
-#   try:
-#     result = requests.post(url, data=json.dumps(ticket_data), headers=header)
-#     return result
-#   except Exception as err: 
-#     print('Error making zendesk POST request:', str(err))
-#     exit()
+  try:
+    result = requests.post(url, data=json.dumps(ticket_data), headers=header)
+    print(result)
+    return result
+  except Exception as err: 
+    print('Error making zendesk POST request:', str(err))
+    exit()
 
     
         
