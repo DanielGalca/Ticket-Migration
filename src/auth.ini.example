@@ -1,5 +1,5 @@
 [default]
-Import = "../out/thePathToYourTickets.json"
+Import = "../src/testest.json"
 
 [zendesk]
 Domain = "targetZendeskDomain"
